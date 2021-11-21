@@ -1,0 +1,63 @@
+﻿<div class="row shadow mt-2 mb-2">
+    <ul class="col-12 d-flex justify-contents-between mt-2">
+        <li class="col-6 list-group-item">Customer id: @Oitem.UserId</li>
+        <li class="col-6 list-group-item">Order id: @Oitem.Id</li>
+    </ul>
+    <ul class="col-12 d-flex justify-contents-between">
+        <li class="col-6 list-group-item">Order Date: @Oitem.OrderDate</li>
+        <li class="col-6 list-group-item">Status: @Oitem.Status</li>
+    </ul>
+
+
+    @if (orderlines == null)
+    {
+        <div class="d-flex justify-content-center align-items-center vh-100">
+            <div class="spinner-border" role="status">
+                <span class="visually-hidden">Loading products</span>
+            </div>
+        </div>
+    }
+    else
+    {
+
+        @foreach (var orderline in orderlines.Where(n => n.OrderId == Oitem.Id))
+        {
+            <OrderItemDetails Orderline="@orderline" />
+        }
+           <div class="mb-2" style="text-align: right">Total Price: @((orderTotal).ToString("#.##"))kr</div>
+        
+    }
+
+</div>
+
+
+
+@code {
+    [Parameter]
+    public OrderCreate Oitem { get; set; }
+    private OrderLineCreate[] orderlines;
+
+    private decimal orderTotal = 0;
+
+
+    private async Task GetOrderLinesAsync()
+    {
+        orderlines = await Http.GetFromJsonAsync<OrderLineCreate[]>("https://localhost:44367/api/OrderLines/");
+
+        orderTotal = new decimal();
+        foreach (var orderline in orderlines.Where(n => n.OrderId == Oitem.Id))
+        {
+            orderTotal += (orderline.UnitPrice * orderline.Quantity);
+        }
+
+    }
+
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        await GetOrderLinesAsync();
+    }
+
+
+
+}

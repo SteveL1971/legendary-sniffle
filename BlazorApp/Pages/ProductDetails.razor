@@ -1,0 +1,30 @@
+﻿@page "/product/{Id}"
+
+<div class="container mt-5 d-flex justify-content-center">
+
+    @if (Item == null)
+    {
+        <p>Loading products</p>
+    }
+    else
+    {
+        <ProductDetailRows Item="@Item" />
+    }
+
+
+</div>
+
+@code {
+    [Parameter]
+
+    public string Id { get; set; }
+    private Product Item;
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        
+        Item = await Http.GetFromJsonAsync<Product>($"https://localhost:44367/api/Products/{Id}");
+
+    }
+}

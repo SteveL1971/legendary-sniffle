@@ -1,0 +1,23 @@
+﻿.card {
+    width: 15rem;
+    font-size: 0.7rem;
+    text-decoration: none;
+}
+
+.mh-8 {
+    min-height: 9rem;
+}
+
+remdec {
+    text-decoration: none;
+}
+
+.removelinkdefault {
+    color: black;
+    text-decoration: none;
+}
+
+.NavLink {
+    text-decoration: 0;
+}
+

@@ -1,0 +1,95 @@
+﻿@if (subCategories == null)
+{
+    <div class="d-flex justify-content-center align-items-center vh-100">
+        <div class="spinner-border" role="status">
+            <span class="visually-hidden">Loading products</span>
+        </div>
+    </div>
+}
+else
+{
+
+    <EditForm Model="@product" OnValidSubmit="@HandleValidSubmit">
+        <div class="mb-3">
+            <label for="name" class="form-label">Product Name</label>
+            <InputText id="name" class="form-control" @bind-Value="product.Name" />
+        </div>
+        <div class="mb-3">
+            <label for="shortDescription" class="form-label">Short Description</label>
+            <InputTextArea id="shortDescription" class="form-control" @bind-Value="product.ShortDescription" />
+        </div>
+        <div class="mb-3">
+            <label for="longDescription" class="form-label">Long Description</label>
+            <InputTextArea id="longDescription" class="form-control" @bind-Value="product.LongDescription" />
+        </div>
+        <div class="mb-3">
+            <label for="imageUrl" class="form-label">Image URL</label>
+            <InputText id="imageUrl" class="form-control" @bind-Value="product.ImageUrl" />
+        </div>
+        <div class="mb-3">
+            <label for="price" class="form-label">Price</label>
+            <InputNumber id="price" class="form-control" @bind-Value="product.Price" />
+        </div>
+        <div class="mb-3">
+            <label for="subCategoryId" class="form-label">SubCategory</label>
+
+            <InputSelect id="subCategoryId" class="form-control" @bind-Value="product.SubCategoryId">
+                @foreach (var value in subCategories)
+                    {
+                    <option value="@value.Id">@value.Name</option>
+                    }
+            </InputSelect>
+
+        </div>
+        <div class="mb-5">
+            <button class="btn btn-secondary" type="submit">Add New Product</button>
+        </div>
+
+    </EditForm>
+
+}
+
+
+
+@code {
+
+
+
+    private Product product = new();
+
+    private async Task HandleValidSubmit()
+    {
+        await Http.PostAsJsonAsync("https://localhost:44367/api/Products", product);
+
+        product = new();
+
+        StateHasChanged();
+
+    }
+
+    private SubCategory[] subCategories;
+    private SubCategory subCategory;
+
+    private async Task GetSubCategoriesAsync()
+    {
+        subCategories = await Http.GetFromJsonAsync<SubCategory[]>("https://localhost:44367/api/SubCategories");
+
+        var catInfo = new List<SubCategory>(){
+            new SubCategory() {Id=1, Name="Steve"},
+            new SubCategory() {Id=2, Name="John"}
+            };
+
+    }
+
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        await GetSubCategoriesAsync();
+    }
+
+    protected override void OnInitialized()
+    {
+        var timer = new Timer(new TimerCallback(_ => InvokeAsync(() => StateHasChanged())), null, 1000, 1000);
+    }
+
+}

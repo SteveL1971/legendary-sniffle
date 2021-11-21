@@ -1,0 +1,77 @@
+﻿<div class="mb-4 col-xl-3 col-lg-4 col-sm-6 col-12 d-flex justify-content-center align-items-center">
+    <div class="card shadow" style="width:17rem">
+        <NavLink href="@Href">
+            <img src="@Item.ProductDetail.ImageUrl" class="card-img-top" alt="...">
+        </NavLink>
+        <div class="card-body mh-8">
+            <h5 class="card-title remdec">@Item.Name</h5>
+            <p class="card-text">@Item.ShortDescription</p>
+        </div>
+        <ul class="list-group list-group-flush">
+            <li class="list-group-item">Price: @showPrice kr</li>
+            <li class="list-group-item">Subcategory: @Item.ProductDetail.SubCategory.Name</li>
+            <li class="list-group-item">Item id: @Item.Id</li>
+            <li class="list-group-item"><a href="@Href" class="card-link">Product details</a></li>
+        </ul>
+        <div class="card-body d-flex justify-content-center">
+
+                <button class="btn btn-secondary btn-small" @onclick="UpdateLocalStorage" >Purchase</button>  
+ 
+        </div>
+    </div>
+ </div>   
+
+
+
+
+@code {
+    [Parameter]
+    public Product Item { get; set; }
+    public string Href { get; set; }
+    public string showPrice { get; set; }
+
+    List<Product> basket = new List<Product>();
+
+    //public Product[] tempContents = new Product[0];
+
+    protected override void OnInitialized()
+    {
+        Href = "product/" + Item.Id.ToString();
+        showPrice = Item.ProductDetail.Price.ToString("#.##");
+    }
+
+    public async void UpdateLocalStorage()
+    {
+        basket = await localStore.GetItemAsync<List<Product>>("basket");
+        if (basket != null)
+        {
+            var response = basket.Find(r => r.Id == Item.Id);
+
+            if (response == null)
+            {
+                Item.Amount++;
+                basket.Add(Item);
+            }
+            else
+            {
+                foreach (Product i in basket)
+                {
+                    if (i.Id == Item.Id)
+                    {
+                        i.Amount++;
+                    }
+                }
+            }
+
+            await localStore.SetItemAsync("basket", basket);
+        }
+        else
+        {
+            basket = new List<Product>();
+            Item.Amount++;
+            basket.Add(Item);
+            await localStore.SetItemAsync("basket", basket);
+        }
+    }
+
+}

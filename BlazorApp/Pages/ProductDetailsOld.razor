@@ -1,0 +1,36 @@
+﻿@page "/test/{id}"
+
+<div class="container mt-5">
+    <h3>ProductDetails</h3>
+    <h3>ProductDetails</h3>
+    <h3>ProductDetails</h3>
+    <h3>ProductDetails</h3>
+    <h3>ProductDetails</h3>
+    <h3>ProductDetails</h3>
+    <h3>ProductDetails</h3>
+    <h3>ProductDetails</h3>
+    <h3>ProductDetails</h3>
+    <h3>ProductDetails</h3>
+    <h3>ProductDetails</h3>
+    <h3>ProductDetails</h3>
+    <h3>ProductDetails</h3>
+    <p>@Item.Name</p>
+    <p>@Item.ShortDescription</p>
+    <p>@Item.ShortDescription</p>
+
+</div>
+
+@code {
+    [Parameter]
+
+    public string Id { get; set; }
+
+    public Product Item { get; set; } = new();
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        Item = await Http.GetFromJsonAsync<Product>($"https://localhost:44367/api/Products/{Id}");
+
+    }
+}

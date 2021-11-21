@@ -1,0 +1,45 @@
+﻿<div class="container mt-5">
+    <div class="">
+        <div class="row">
+
+            @if (orders == null)
+            {
+                <div class="d-flex justify-content-center align-items-center vh-100">
+                    <div class="spinner-border" role="status">
+                        <span class="visually-hidden">Loading products</span>
+                    </div>
+                </div>
+            }
+            else
+            {
+                @foreach (var order in orders.Where(n => n.UserId == 1))
+                {
+                    <OrderItem Oitem="@order" />
+                }
+            }
+
+        </div>
+    </div>
+</div>
+
+
+@code {
+    private OrderCreate[] orders;
+    
+    private async Task GetOrdersAsync()
+    {
+        orders = await Http.GetFromJsonAsync<OrderCreate[]>("https://localhost:44367/api/Orders");
+    }
+
+    protected override void OnInitialized()
+    {
+        var timer = new Timer(new TimerCallback(_ => InvokeAsync(() => StateHasChanged())), null, 1000, 1000);
+
+    }
+
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        await GetOrdersAsync();
+    }
+}

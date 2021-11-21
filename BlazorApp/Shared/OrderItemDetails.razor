@@ -1,0 +1,37 @@
+﻿@if (Item == null)
+{
+    <div class="d-flex justify-content-center align-items-center vh-100">
+        <div class="spinner-border" role="status">
+            <span class="visually-hidden">Loading products</span>
+        </div>
+    </div>
+}
+else
+{
+<div class="col-12 d-flex justify-content-between align-items-center">
+    <NavLink href="@Href" class="col-1">
+        <img src="@Item.ProductDetail.ImageUrl" class="col-1" style="height: 2rem; width: 2rem;"alt="...">
+    </NavLink>
+    <p class="col-4">@Item.Name</p>
+    <p class="col-2">Quantity: @Orderline.Quantity</p>
+    <p class="col-2" style="text-align: right;">Price: @Orderline.UnitPrice.ToString("#.##") kr/st</p>
+    <p class="col-3" style="text-align: right;">@((Orderline.UnitPrice*Orderline.Quantity).ToString("#.##")) kr</p>
+</div>
+}
+
+@code {
+    [Parameter]
+    public OrderLineCreate Orderline { get; set; }
+    public string Href { get; set; }
+    public Product Item;
+
+    protected override async Task OnInitializedAsync()
+    {
+
+        Item = await Http.GetFromJsonAsync<Product>($"https://localhost:44367/api/Products/{Orderline.ProductId}");
+        Href = "product/" + Item.Id.ToString();
+
+    }
+
+
+}

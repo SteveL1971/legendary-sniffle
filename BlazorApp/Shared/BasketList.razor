@@ -1,0 +1,120 @@
+﻿<div class="container mt-5">
+    <div class="">
+        <div class="row">
+
+            @if (basket == null)
+            {
+                <div class="d-flex justify-content-center align-items-center vh-100">
+                    <div class="spinner-border" role="status">
+                        <span class="visually-hidden">Loading products</span>
+                    </div>
+                </div>
+            }
+            else
+            {
+
+                <div class="container d-flex flex-column mb-4">
+                    <div>Number of item rows: @totalRows</div>
+                    <div>Total number of items: @totalItems</div>
+                    <div>Total Price: @totalPrice kr</div>
+                </div>
+
+                @foreach (var product in basket)
+                {
+                    <BasketItem Item="@product" />
+                }
+
+                <button class="w-25 mt-4 btn btn-secondary btn-small" @onclick="SubmitOrder">Place order</button>
+
+            }
+
+        </div>
+    </div>
+</div>
+
+
+@code {
+    private Product[] products;
+
+    private OrderCreate order;
+    private OrderLineCreate orderLine;
+
+    public Product Item { get; set; }
+
+    List<Product> basket = new List<Product>();
+
+    private int totalRows;
+    private int totalItems;
+    private decimal _totalPrice;
+    public string totalPrice;
+
+
+
+    private async Task GetProductsAsync()
+    {
+        basket = await localStore.GetItemAsync<List<Product>>("basket");
+        totalRows = 0;
+        totalItems = 0;
+        _totalPrice = 0;
+        if (basket != null)
+        {
+            foreach (Product i in basket)
+            {
+                totalRows++;
+                totalItems += i.Amount;
+                _totalPrice += (i.Amount * i.ProductDetail.Price);
+            }
+            totalPrice = _totalPrice.ToString("#.##");
+        }
+    }
+
+    protected override void OnInitialized()
+    {
+        var timer = new Timer(new TimerCallback(_ => InvokeAsync(() => StateHasChanged())), null, 1000, 1000);
+    }
+
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        await GetProductsAsync();
+    }
+
+    private async Task SubmitOrder()
+    {
+
+        if (basket != null)
+        {
+
+            var order = new OrderCreate
+            {
+                Id=Guid.NewGuid(),
+                UserId = 1,
+                Status = "Order placed",
+                OrderDate = DateTimeOffset.Now,
+                DeliveryTypeId = 2
+            };
+
+            await Http.PostAsJsonAsync("https://localhost:44367/api/Orders", order);
+
+
+            foreach (Product i in basket)
+            {
+                var orderLine = new OrderLineCreate
+                {
+                    OrderId = order.Id,
+                    UnitPrice = i.ProductDetail.Price,
+                    Quantity = i.Amount,
+                    ProductId = i.Id
+                };
+                await Http.PostAsJsonAsync("https://localhost:44367/api/Orderlines", orderLine);
+            }
+
+            await localStore.ClearAsync();
+
+
+            //product = new();
+
+            //StateHasChanged();
+        }
+    }
+}

@@ -1,0 +1,105 @@
+﻿<div class="col-12">
+    <div class="shadow d-flex justify-content-between w-75 row">
+        <NavLink href="@Href" class="col-2 d-flex align-items-center justify-content-left">
+            <img src="@Item.ProductDetail.ImageUrl" class="w-25" alt="...">
+        </NavLink>
+        <div class="card-body mh-8 d-flex justify-content-between col-7">
+            <p>@Item.Name</p>
+            <p>Amount: @Item.Amount</p>
+            <p>Price: @showPrice kr</p>
+            <p>Total Price: @totalPrice kr</p>
+        </div>
+        <div class="card-body d-flex justify-content-center col-2">
+            <button class="btn btn-secondary btn-small" @onclick="minusOne">-1</button>
+            <button class="btn btn-secondary btn-small" @onclick="plusOne">+1</button>
+        </div>
+    </div>
+</div>
+
+
+
+
+@code {
+    [Parameter]
+    public Product Item { get; set; }
+    public string Href { get; set; }
+    public string showPrice { get; set; }
+    public string totalPrice { get; set; }
+
+    List<Product> basket = new List<Product>();
+    List<Product> minusBasket = new List<Product>();
+
+    public Product[] tempContents = new Product[0];
+
+    protected override void OnInitialized()
+    {
+        Href = "product/" + Item.Id.ToString();
+        showPrice = Item.ProductDetail.Price.ToString("#.##");
+        totalPrice = (Item.ProductDetail.Price * Item.Amount).ToString("#.##");
+    }
+
+    public async void plusOne()
+    {
+        basket = await localStore.GetItemAsync<List<Product>>("basket");
+        if (basket != null)
+        {
+            var response = basket.Find(r => r.Id == Item.Id);
+
+            if (response == null)
+            {
+            }
+            else
+            {
+                foreach (Product i in basket)
+                {
+                    if (i.Id == Item.Id)
+                    {
+                        i.Amount++;
+                        Item.Amount++;
+                        totalPrice = (Item.ProductDetail.Price * i.Amount).ToString("#.##");
+                    }
+                }
+            }
+            await localStore.SetItemAsync("basket", basket);
+        }
+    }
+
+    public async void minusOne()
+    {
+        basket = await localStore.GetItemAsync<List<Product>>("basket");
+        if (basket != null)
+        {
+            var response = basket.Find(r => r.Id == Item.Id);
+
+            if (response == null)
+            {
+            }
+            else
+            {
+                minusBasket = new List<Product>();
+                foreach (Product i in basket)
+                {
+                    if (i.Id == Item.Id)
+                        {
+                            i.Amount--;
+                            Item.Amount--;
+                            totalPrice = (Item.ProductDetail.Price * i.Amount).ToString("#.##");
+                            if (i.Amount > 0)
+                            {
+                                minusBasket.Add(i);
+                            }
+                        }
+                    else
+                        {
+                            minusBasket.Add(i);
+                        }
+                }
+
+            }
+
+
+            await localStore.SetItemAsync("basket", minusBasket);
+        }
+    }
+
+}
